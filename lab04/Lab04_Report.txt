@@ -1,0 +1,29 @@
+======================================================
+COE67-222 Operating Systems - Lab 04 Report
+Name: Phatthanin Plotkhao
+Student ID: 67113514
+======================================================
+
+1. The Deadlock (Phase 2):
+Model A first acquires GPU 0 and then waits while it is processing. Model B acquires GPU 1 and then also waits while it is processing. After the context switch, Model A requests GPU 1, but GPU 1 is already held by Model B, so Model A waits. Model B then requests GPU 0, but GPU 0 is already held by Model A, so Model B waits. Model A cannot release GPU 0 until it gets GPU 1, and Model B cannot release GPU 1 until it gets GPU 0. This creates a circular wait, so both threads remain blocked and the program never reaches the completion message.
+
+2. The Solution (Phase 3):
+Model B was changed to request GPU 0 before GPU 1, matching Model A's resource order. If Model A holds GPU 0, Model B waits for GPU 0 without holding GPU 1. Model A can then acquire GPU 1, finish, and release both locks. Model B subsequently acquires GPU 0 and GPU 1 and finishes. Because all threads follow the same lock order, a circular wait cannot form.
+
+The avoidance script completed successfully. The Banker's Algorithm test also reported a safe state with available resources [5, 4, 5] and the safe execution sequence Job_1 -> Job_2 -> Job_0.
+
+3. Starvation vs. Deadlock (Phase 4):
+The deadlock script freezes because both models wait permanently for resources held by each other; no model completes and the program does not print its completion message. The starvation script continues running and eventually terminates after three seconds, but access is unfair. In the test, Greedy_Model_A acquired the resource 22,173 times, Greedy_Model_B acquired it 22,158 times, and Polite_Model acquired it only 295 times. Thus, starvation reduces one thread's opportunities without stopping the entire system.
+
+A scheduler can use Aging by gradually increasing the priority of a process or thread each time it waits for the resource. After waiting long enough, Polite_Model would receive a high enough priority to run before the greedy jobs, obtain the lock, and make progress. Once it has received service, its priority can be adjusted back to a normal level. This prevents indefinite waiting while preserving concurrent execution.
+
+4. Deadlock Detection & Recovery (Phase 3.3):
+The timeout parameter limits how long Model A waits for GPU 1. If the lock is not acquired within 2.0 seconds, the timeout returns False. This simulates an OS watchdog detecting that a process has waited unusually long and may be part of a deadlock.
+
+When the deadlock was detected, Model A released GPU 0, which it was holding, and returned. This recovery step broke the resource cycle and allowed Model B to acquire GPU 0, complete its work, and release both resources. The program then ended with "System Finished (Recovered Successfully)" without requiring a manual interrupt.
+
+Test Results:
+- deadlock_avoidance.py: completed successfully.
+- bankers_algo.py: SYSTEM IS SAFE; sequence Job_1 -> Job_2 -> Job_0.
+- starvation_sim.py: Greedy_Model_A 22,173; Greedy_Model_B 22,158; Polite_Model 295 acquisitions.
+- deadlock_detection.py: detected the deadlock and recovered successfully.
